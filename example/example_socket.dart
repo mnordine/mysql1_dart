@@ -4,12 +4,14 @@ import 'package:mysql1/mysql1.dart';
 
 Future main() async {
   // Open a connection (testdb should already exist)
-  final conn = await MySqlConnection.connect(ConnectionSettings(
-      host: 'localhost',
-      port: 3306,
+  final conn = await MySqlConnection.connect(
+    ConnectionSettings.socket(
+      path: '/var/lib/mysql/mysql.sock',
       user: 'root',
       db: 'testdb',
-      password: 'secret'));
+    ),
+    isUnixSocket: true,
+  );
 
   // Create a table
   await conn.query(

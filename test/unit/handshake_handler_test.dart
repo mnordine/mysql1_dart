@@ -24,14 +24,14 @@ Buffer _createHandshake(protocolVersion, serverVersion, threadId,
     scrambleBuffer2,
     pluginName,
     pluginNameNull]) {
-  int length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
+  var length = 1 + (serverVersion.length as int) + 1 + 4 + 8 + 1 + 2;
   if (serverLanguage != null) {
     length += 1 + 2 + 2 + 1 + 10;
     if (scrambleBuffer2 != null) {
-      length += scrambleBuffer2.length + 1;
+      length += (scrambleBuffer2.length as int) + 1;
     }
     if (pluginName != null) {
-      length += pluginName.length;
+      length += pluginName.length as int;
       if (pluginNameNull) {
         length++;
       }
@@ -148,7 +148,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var pluginName = 'plugin name';
+      var pluginName = 'mysql_native_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -164,7 +164,7 @@ void main() {
           false);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
     });
 
     test('should read plugin name with null', () {
@@ -182,7 +182,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var pluginName = 'plugin name';
+      var pluginName = 'mysql_native_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -198,7 +198,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
     });
 
     test('should read buffer without scramble data', () {
@@ -216,7 +216,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2;
       var scrambleLength = scrambleBuffer1.length;
-      var pluginName = 'plugin name';
+      var pluginName = 'caching_sha2_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -232,7 +232,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.cachingSha2Password));
     });
 
     test('should read buffer with short scramble data length', () {
@@ -250,7 +250,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrst';
       var scrambleLength = 5;
-      var pluginName = 'plugin name';
+      var pluginName = 'mysql_native_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -266,7 +266,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
     });
   });
 
@@ -322,7 +322,7 @@ void main() {
           CLIENT_SECURE_CONNECTION |
           CLIENT_MULTI_RESULTS;
 
-      AuthHandler authHandler = response.nextHandler;
+      var authHandler = response.nextHandler as AuthHandler;
       expect(authHandler.characterSet, equals(CharacterSet.UTF8MB4));
       expect(authHandler.username, equals(user));
       expect(authHandler.password, equals(password));
@@ -359,7 +359,7 @@ void main() {
           serverCapabilities2,
           scrambleLength,
           scrambleBuffer2,
-          HandshakeHandler.MYSQL_NATIVE_PASSWORD,
+          'mysql_native_password',
           true);
       var response = handler.processResponse(responseBuffer);
 
@@ -369,7 +369,7 @@ void main() {
       expect(response, isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, isInstanceOf<AuthHandler>());
 
-      AuthHandler authHandler = response.nextHandler;
+      var authHandler = response.nextHandler as AuthHandler;
       expect(authHandler.username, equals(user));
       expect(authHandler.password, equals(password));
       expect(authHandler.scrambleBuffer,
@@ -470,13 +470,13 @@ void main() {
           CLIENT_SSL |
           CLIENT_MULTI_RESULTS;
 
-      SSLHandler sslHandler = response.nextHandler;
+      var sslHandler = response.nextHandler as SSLHandler;
       expect(sslHandler.nextHandler, isInstanceOf<AuthHandler>());
       expect(sslHandler.characterSet, equals(CharacterSet.UTF8MB4));
       expect(sslHandler.clientFlags, equals(clientFlags));
       expect(sslHandler.maxPacketSize, equals(MAX_PACKET_SIZE));
 
-      AuthHandler authHandler = sslHandler.nextHandler;
+      var authHandler = sslHandler.nextHandler as AuthHandler;
       expect(authHandler.characterSet, equals(CharacterSet.UTF8MB4));
       expect(authHandler.username, equals(user));
       expect(authHandler.password, equals(password));

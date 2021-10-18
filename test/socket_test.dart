@@ -1,19 +1,29 @@
 // ignore_for_file: strong_mode_implicit_dynamic_list_literal, strong_mode_implicit_dynamic_parameter, argument_type_not_assignable, invalid_assignment, non_bool_condition, strong_mode_implicit_dynamic_variable, deprecated_member_use
 
+@TestOn('!windows')
 import 'dart:async';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:mysql1/mysql1.dart';
+import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/buffered_socket.dart';
 import 'package:mysql1/src/single_connection.dart';
 import 'package:test/test.dart';
 
+class MockBufferedSocket extends Mock implements BufferedSocket {}
+
+class BufferFake extends Fake implements Buffer {}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue<Buffer>(BufferFake());
+  });
+
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
-//  Logger("BufferedSocket").level = Level.ALL;
+  //Logger('BufferedSocket').level = Level.ALL;
 
   Logger.root.onRecord.listen((LogRecord r) {
     print('${r.time}: ${r.loggerName}: ${r.message}');
@@ -23,7 +33,7 @@ void main() {
     try {
       await MySqlConnection.connect(ConnectionSettings(port: 12345));
     } on SocketException catch (e) {
-      expect(e.osError.errorCode, 111);
+      expect(e.osError?.errorCode, 111);
     }
   });
 
@@ -48,7 +58,9 @@ void main() {
   test(
       'calling close on a broken socket should respect the socket timeout. close never throws.',
       () async {
-    var m = _MockBufferedSocket();
+    var m = MockBufferedSocket();
+    when(() => m.close()).thenReturn(null);
+
     var r = ReqRespConnection(m, null, null, 1024);
     var conn = MySqlConnection(const Duration(microseconds: 5), r);
     await conn.close(); // does not timeout the test.
@@ -56,7 +68,11 @@ void main() {
 
   test('calling query on a broken socket should respect the socket timeout',
       () async {
-    var m = _MockBufferedSocket();
+    var m = MockBufferedSocket();
+    when(() => m.writeBuffer(any<Buffer>()))
+        .thenAnswer((_) => Future.value(BufferFake()));
+    when(() => m.writeBufferPart(any<Buffer>(), any<int>(), any<int>()))
+        .thenAnswer((_) => Future.value(BufferFake()));
     var r = ReqRespConnection(m, null, null, 1024);
     var conn = MySqlConnection(const Duration(microseconds: 5), r);
     expect(conn.query('SELECT 1'), throwsA(timeoutMatcher));
@@ -67,12 +83,8 @@ void main() {
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12347);
-      sock.listen((socket) {
-        socket.close();
-      });
-      await MySqlConnection.connect(ConnectionSettings(
-        port: 12347,
-      ));
+      sock.listen((socket) => socket.close());
+      await MySqlConnection.connect(ConnectionSettings(port: 12347));
     } on SocketException catch (e) {
       thrown = true;
       expect(e.message, 'Socket has been closed');
@@ -151,8 +163,6 @@ void main() {
   });
 }
 
-class _MockBufferedSocket extends Mock implements BufferedSocket {}
-
 final Matcher timeoutMatcher = const _TimeoutException();
 
 class _TimeoutException extends TypeMatcher<TimeoutException> {
@@ -168,5 +178,5 @@ class _SocketException extends TypeMatcher<SocketException> {
   const _SocketException(this.errorCode) : super('SocketException');
   @override
   bool matches(item, Map matchState) =>
-      item is SocketException && item.osError.errorCode == errorCode;
+      item is SocketException && item.osError?.errorCode == errorCode;
 }
