@@ -206,18 +206,17 @@ class MySqlConnection {
     return ret;
   }
 
-  Future transaction(Function(TransactionContext) queryBlock) async {
+  Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock) async {
+    final T result;
     await query('start transaction');
     try {
-      await queryBlock(TransactionContext._(this));
+      result = await queryBlock(TransactionContext._(this));
     } catch (e) {
       await query('rollback');
-      if (e is! _RollbackError) {
-        rethrow;
-      }
-      return e;
+      rethrow;
     }
     await query('commit');
+    return result;
   }
 }
 
