@@ -1,6 +1,7 @@
 library mysql1.binary_data_packet;
 
 import 'package:logging/logging.dart';
+import '../auth/character_set.dart';
 
 import '../constants.dart';
 
@@ -61,7 +62,13 @@ class BinaryDataPacket extends ResultRow {
         }
         var value = Blob.fromBytes(buffer.readList(len));
         log.fine('Value: $value');
-        return value;
+
+        final charset = field.characterSet;
+        if (charset == CharacterSet.binary) {
+          return value;
+        }
+
+        return value.toString();
       case FIELD_TYPE_TINY:
         log.fine('TINY');
         var value = buffer.readByte();
