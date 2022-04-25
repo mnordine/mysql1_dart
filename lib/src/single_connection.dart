@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:logging/logging.dart';
+import 'package:mysql1/mysql1.dart';
 import 'package:mysql1/src/prepared_statements/prepared_query.dart';
 
 import 'auth/handshake_handler.dart';
@@ -90,7 +91,7 @@ class ConnectionSettings {
 
 /// Represents a connection to the database. Use [connect] to open a connection. You
 /// must call [close] when you are done.
-class MySqlConnection {
+class MySqlConnection implements QueriableConnection {
   final Duration _timeout;
 
   final ReqRespConnection _conn;
@@ -220,14 +221,23 @@ class MySqlConnection {
   }
 }
 
-class TransactionContext {
+abstract class QueriableConnection {
+  Future<Results> query(String sql, [List<Object?>? values]);
+  Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values);
+}
+
+class TransactionContext implements QueriableConnection {
   final MySqlConnection _conn;
   TransactionContext._(this._conn);
 
+  @override
   Future<Results> query(String sql, [List<Object?>? values]) =>
       _conn.query(sql, values);
+
+  @override
   Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values) =>
       _conn.queryMulti(sql, values);
+
   void rollback() => throw _RollbackError();
 }
 
