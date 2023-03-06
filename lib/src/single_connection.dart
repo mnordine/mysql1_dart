@@ -224,6 +224,7 @@ class MySqlConnection implements QueriableConnection {
 abstract class QueriableConnection {
   Future<Results> query(String sql, [List<Object?>? values]);
   Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values);
+  Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock);
 }
 
 class TransactionContext implements QueriableConnection {
