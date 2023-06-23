@@ -35,7 +35,7 @@ class ExecuteQueryHandler extends Handler {
 
   final PreparedQuery? _preparedQuery;
   final List<Object?> _values;
-  List? preparedValues;
+  List<Object>? preparedValues;
   late OkPacket _okPacket;
   final bool _executed;
   bool _cancelled = false;
@@ -90,7 +90,7 @@ class ExecuteQueryHandler extends Handler {
     return _prepareString(value);
   }
 
-  int measureValue(dynamic value, dynamic preparedValue) {
+  int measureValue(Object? value, Object preparedValue) {
     if (value != null) {
       if (value is int) {
         return _measureInt(value, preparedValue);
@@ -137,7 +137,7 @@ class ExecuteQueryHandler extends Handler {
     return FIELD_TYPE_VARCHAR;
   }
 
-  void _writeValue(value, preparedValue, Buffer buffer) {
+  void _writeValue(Object? value, Object preparedValue, Buffer buffer) {
     if (value != null) {
       if (value is int) {
         _writeInt(value, preparedValue, buffer);
@@ -165,7 +165,7 @@ class ExecuteQueryHandler extends Handler {
     return 8;
   }
 
-  void _writeInt(value, preparedValue, Buffer buffer) {
+  void _writeInt(int value, Object preparedValue, Buffer buffer) {
 //          if (value < 128 && value > -127) {
 //            log.fine("TINYINT: value");
 //            types.add(FIELD_TYPE_TINY);
@@ -184,16 +184,16 @@ class ExecuteQueryHandler extends Handler {
 //          }
   }
 
-  List<int> _prepareDouble(value) {
+  List<int> _prepareDouble(Object value) {
     return utf8.encode(value.toString());
   }
 
-  int _measureDouble(double value, dynamic preparedValue) {
+  int _measureDouble(double value, List<Object> preparedValue) {
     return Buffer.measureLengthCodedBinary(preparedValue.length) +
-        (preparedValue.length as int);
+        preparedValue.length;
   }
 
-  void _writeDouble(value, preparedValue, Buffer buffer) {
+  void _writeDouble(Object value, List<Object> preparedValue, Buffer buffer) {
     log.fine('DOUBLE: $value');
 
     buffer.writeLengthCodedBinary(preparedValue.length);
@@ -217,7 +217,7 @@ class ExecuteQueryHandler extends Handler {
     return 8;
   }
 
-  void _writeDateTime(value, preparedValue, Buffer buffer) {
+  void _writeDateTime(DateTime value, Object preparedValue, Buffer buffer) {
     // TODO remove Date eventually
     log.fine('DATE: $value');
     buffer.writeByte(7);
@@ -230,7 +230,7 @@ class ExecuteQueryHandler extends Handler {
     buffer.writeByte(value.second);
   }
 
-  dynamic _prepareBool(value) {
+  Object _prepareBool(Object value) {
     return value;
   }
 
@@ -243,52 +243,50 @@ class ExecuteQueryHandler extends Handler {
     buffer.writeByte(value ? 1 : 0);
   }
 
-  dynamic _prepareList(value) {
+  Object _prepareList(Object value) {
     return value;
   }
 
-  int _measureList(List value, dynamic preparedValue) {
+  int _measureList(List<Object> value, Object preparedValue) {
     return Buffer.measureLengthCodedBinary(value.length) + value.length;
   }
 
-  void _writeList(value, preparedValue, Buffer buffer) {
+  void _writeList(List<Object> value, Object preparedValue, Buffer buffer) {
     log.fine('LIST: $value');
     buffer.writeLengthCodedBinary(value.length);
     buffer.writeList(value);
   }
 
-  dynamic _prepareBlob(value) {
-    return (value as Blob).toBytes();
+  List<int> _prepareBlob(Blob value) {
+    return value.toBytes();
   }
 
-  int _measureBlob(Blob value, preparedValue) {
-    return Buffer.measureLengthCodedBinary(preparedValue.length) +
-        (preparedValue.length as int);
+  int _measureBlob(Blob value, List<Object> preparedValue) {
+    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
   }
 
-  void _writeBlob(value, preparedValue, Buffer buffer) {
+  void _writeBlob(Object value, List<Object> preparedValue, Buffer buffer) {
     log.fine('BLOB: $value');
     buffer.writeLengthCodedBinary(preparedValue.length);
     buffer.writeList(preparedValue);
   }
 
-  dynamic _prepareString(value) {
+  List<int> _prepareString(Object value) {
     return utf8.encode(value.toString());
   }
 
-  int _measureString(String value, preparedValue) {
-    return Buffer.measureLengthCodedBinary(preparedValue.length) +
-        (preparedValue.length as int);
+  int _measureString(String value, List<Object> preparedValue) {
+    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
   }
 
-  void _writeString(value, preparedValue, Buffer buffer) {
+  void _writeString(String value, List<Object> preparedValue, Buffer buffer) {
     log.fine('STRING: $value');
     buffer.writeLengthCodedBinary(preparedValue.length);
     buffer.writeList(preparedValue);
   }
 
   List<int> createNullMap() {
-    var bytes = ((_values.length + 7) / 8).floor().toInt();
+    var bytes = ((_values.length + 7) / 8).floor();
     var nullMap = List<int>.filled(bytes, 0);
     var byte = 0;
     var bit = 0;
@@ -327,9 +325,9 @@ class ExecuteQueryHandler extends Handler {
 
   @override
   HandlerResponse processResponse(Buffer response) {
-    var packet;
+    Object? packet;
     if (_cancelled) {
-      _streamController?.close();
+      unawaited(_streamController?.close());
       return HandlerResponse(finished: true);
     }
     if (_state == STATE_HEADER_PACKET) {

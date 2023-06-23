@@ -14,10 +14,10 @@ void main() {
       var packet = BinaryDataPacket.forTests(null);
       var field = Field.forTests(FIELD_TYPE_BLOB);
       var buffer = Buffer.fromList([1, 32]);
-      var value = packet.readField(field, buffer);
+      var value = packet.readField(field, buffer) as Blob?;
 
       expect(value, TypeMatcher<Blob>());
-      expect((value as Blob).toString(), equals(' '));
+      expect(value?.toString(), equals(' '));
     });
 
     test('can read long blob', () {
@@ -29,10 +29,10 @@ void main() {
       for (var i = 0; i < 500; i++) {
         buffer.writeByte(32);
       }
-      var value = packet.readField(field, buffer);
+      var value = packet.readField(field, buffer) as Blob?;
 
       expect(value, TypeMatcher<Blob>());
-      expect((value as Blob).toString(), hasLength(500));
+      expect(value?.toString(), hasLength(500));
     });
 
     test('can read very long blob', () {
@@ -44,10 +44,10 @@ void main() {
       for (var i = 0; i < 50000; i++) {
         buffer.writeByte(32);
       }
-      var value = packet.readField(field, buffer);
+      var value = packet.readField(field, buffer) as Blob?;
 
       expect(value, TypeMatcher<Blob>());
-      expect((value as Blob).toString(), hasLength(50000));
+      expect(value?.toString(), hasLength(50000));
     });
   });
 }

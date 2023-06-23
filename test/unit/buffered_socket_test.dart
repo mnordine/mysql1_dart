@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:mocktail/mocktail.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import 'package:mysql1/src/buffered_socket.dart';
@@ -17,53 +16,58 @@ class MockBuffer extends Mock implements Buffer {}
 
 void main() {
   group('buffered socket', () {
-    var rawSocket;
+    MockSocket? rawSocket;
     late SocketFactory factory;
+    StreamController<RawSocketEvent>? streamController;
 
     setUp(() {
-      var streamController = StreamController<RawSocketEvent>();
-      factory = (host, port, timeout, {bool isUnixSocket = false}) {
+      streamController = StreamController<RawSocketEvent>();
+      factory = (host, port, timeout, {isUnixSocket = false}) {
         rawSocket = MockSocket(streamController);
         return Future.value(rawSocket);
       };
     });
 
-    test('can read data which is already available', () async {
-      var c = Completer();
+    tearDown(() async {
+      await streamController?.close();
+    });
 
-      var socket;
+    test('can read data which is already available', () async {
+      var c = Completer<void>();
+
+      BufferedSocket? socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = Buffer(4);
-        await socket.readBuffer(buffer);
+        await socket?.readBuffer(buffer);
         expect(buffer.list, equals([1, 2, 3, 4]));
         c.complete();
       }, onDone: () {}, onError: (e) {}, socketFactory: factory);
       socket = thesocket;
-      rawSocket.addData([1, 2, 3, 4]);
+      rawSocket?.addData([1, 2, 3, 4]);
       return c.future;
     });
 
     test('can read data which is partially available', () async {
-      var c = Completer();
+      var c = Completer<void>();
 
-      var socket;
+      BufferedSocket? socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = Buffer(4);
-        socket.readBuffer(buffer).then((_) {
+        await socket?.readBuffer(buffer).then((_) {
           expect(buffer.list, equals([1, 2, 3, 4]));
           c.complete();
         });
-        rawSocket.addData([3, 4]);
+        rawSocket?.addData([3, 4]);
       }, onDone: () {}, onError: (e) {}, socketFactory: factory);
       socket = thesocket;
-      rawSocket.addData([1, 2]);
+      rawSocket?.addData([1, 2]);
       return c.future;
     });
 
     test('can read data which is not yet available', () async {
-      var c = Completer();
+      var c = Completer<void>();
       var socket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
@@ -75,13 +79,13 @@ void main() {
         expect(buffer.list, equals([1, 2, 3, 4]));
         c.complete();
       }));
-      rawSocket.addData([1, 2, 3, 4]);
+      rawSocket?.addData([1, 2, 3, 4]);
       return c.future;
     });
 
     test('can read data which is not yet available, arriving in two chunks',
         () async {
-      var c = Completer();
+      var c = Completer<void>();
       var socket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 30),
           onDataReady: () {},
@@ -93,8 +97,8 @@ void main() {
         expect(buffer.list, equals([1, 2, 3, 4]));
         c.complete();
       }));
-      rawSocket.addData([1, 2]);
-      rawSocket.addData([3, 4]);
+      rawSocket?.addData([1, 2]);
+      rawSocket?.addData([3, 4]);
       return c.future;
     });
 
@@ -111,7 +115,7 @@ void main() {
       }));
       expect(() {
         socket.readBuffer(buffer);
-      }, throwsA(isInstanceOf<StateError>()));
+      }, throwsA(const isInstanceOf<StateError>()));
     });
 
     test('should write buffer', () async {
@@ -149,16 +153,13 @@ void main() {
 
     test('should send close event', () async {
       var closed = false;
-      var onClosed = () {
-        closed = true;
-      };
       await BufferedSocket.connect('localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
-          onClosed: onClosed,
+          onClosed: () => closed = true,
           socketFactory: factory);
-      await rawSocket.closeRead();
+      rawSocket?.closeRead();
       expect(closed, equals(true));
     });
   });

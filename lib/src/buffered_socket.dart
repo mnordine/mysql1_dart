@@ -5,12 +5,12 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'buffer.dart';
 
-typedef ErrorHandler = Function(Object err);
-typedef DoneHandler = Function();
-typedef DataReadyHandler = Function();
-typedef ClosedHandler = Function();
+typedef ErrorHandler = void Function(Object err);
+typedef DoneHandler = void Function();
+typedef DataReadyHandler = void Function();
+typedef ClosedHandler = void Function();
 
-typedef SocketFactory = Function(String host, int port, Duration timeout,
+typedef SocketFactory = Future<RawSocket> Function(String host, int port, Duration timeout,
     {bool isUnixSocket});
 
 class BufferedSocket {
@@ -54,11 +54,13 @@ class BufferedSocket {
     }
   }
 
-  void _onSocketDone() {
+  Future<void> _onSocketDone() async {
     if (onDone != null) {
       onDone!();
       _closed = true;
     }
+
+    await _subscription.cancel();
   }
 
   static Future<RawSocket> defaultSocketFactory(
@@ -203,13 +205,13 @@ class BufferedSocket {
   }
 
   void close() {
-    _socket.close();
+    unawaited(_socket.close());
     _closed = true;
   }
 
-  Future startSSL() async {
+  Future<void> startSSL() async {
     log.fine('Securing socket');
-    var socket = await RawSecureSocket.secure(_socket,
+    final socket = await RawSecureSocket.secure(_socket,
         subscription: _subscription, onBadCertificate: (cert) => true);
     log.fine('Socket is secure');
     _socket = socket;

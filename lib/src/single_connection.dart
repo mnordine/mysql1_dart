@@ -102,7 +102,7 @@ class MySqlConnection implements QueriableConnection {
   /// Close the connection
   ///
   /// This method will never throw
-  Future close() async {
+  Future<void> close() async {
     if (_sentClose) {
       return;
     }
@@ -129,11 +129,11 @@ class MySqlConnection implements QueriableConnection {
   /// server.
   static Future<MySqlConnection> connect(ConnectionSettings c,
       {bool isUnixSocket = false}) async {
-    assert(!c.useSSL); // Not implemented
-    assert(!c.useCompression);
+    assert(!c.useSSL, 'ssl not implemented'); // Not implemented
+    assert(!c.useCompression, 'compression not implemented');
 
     ReqRespConnection? conn;
-    late Completer handshakeCompleter;
+    late Completer<void> handshakeCompleter;
 
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
@@ -142,7 +142,7 @@ class MySqlConnection implements QueriableConnection {
       conn?._readPacket();
     }, onDone: () {
       _log.fine('done');
-    }, onError: (Object error) {
+    }, onError: (error) {
       _log.warning('socket error: $error');
 
       // If conn has not been connected there was a connection error.
@@ -268,7 +268,7 @@ class ReqRespConnection {
   static const int STATE_PACKET_DATA = 1;
 
   Handler? _handler;
-  Completer? _completer;
+  Completer<void>? _completer;
 
   final BufferedSocket _socket;
   final _largePacketBuffers = <Buffer>[];
@@ -285,7 +285,7 @@ class ReqRespConnection {
   bool _useSSL = false;
   final int _maxPacketSize;
 
-  ReqRespConnection(this._socket, this._handler, Completer? handshakeCompleter,
+  ReqRespConnection(this._socket, this._handler, Completer<void>? handshakeCompleter,
       this._maxPacketSize)
       : _headerBuffer = Buffer(HEADER_SIZE),
         _compressedHeaderBuffer = Buffer(COMPRESSED_HEADER_SIZE),
@@ -304,7 +304,7 @@ class ReqRespConnection {
     }
   }
 
-  Future _readPacket() async {
+  Future<void> _readPacket() async {
     _log.fine('readPacket readyForHeader=$_readyForHeader');
     if (_readyForHeader) {
       _readyForHeader = false;
@@ -313,7 +313,7 @@ class ReqRespConnection {
     }
   }
 
-  Future _handleHeader(Buffer buffer) async {
+  Future<void> _handleHeader(Buffer buffer) async {
     var _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
     _log.fine('about to read $_dataSize bytes for packet $_packetNumber');
@@ -328,7 +328,7 @@ class ReqRespConnection {
     }
   }
 
-  Future _handleMoreData(Buffer buffer) async {
+  Future<void> _handleMoreData(Buffer buffer) async {
     _largePacketBuffers.add(buffer);
     if (buffer.length < 0xffffff) {
       var length = _largePacketBuffers.fold<int>(0, (length, buf) {
@@ -350,25 +350,26 @@ class ReqRespConnection {
     }
   }
 
-  Future _handleData(Buffer buffer) async {
+  Future<void> _handleData(Buffer buffer) async {
     _readyForHeader = true;
     _headerBuffer.reset();
 
     try {
-      var response = _handler?.processResponse(buffer);
-      if (_handler is HandshakeHandler) {
-        _useCompression = (_handler as HandshakeHandler).useCompression;
-        _useSSL = (_handler as HandshakeHandler).useSSL;
+      final handler = _handler;
+      var response = handler?.processResponse(buffer);
+      if (handler is HandshakeHandler) {
+        _useCompression = handler.useCompression;
+        _useSSL = handler.useSSL;
       }
       if (response?.nextHandler != null) {
         // if handler.processResponse() returned a Handler, pass control to that handler now
-        _handler = response!.nextHandler;
-        await sendBuffer(_handler!.createRequest());
-        if (_useSSL && _handler is SSLHandler) {
+        final handler = _handler = response!.nextHandler;
+        await sendBuffer(handler!.createRequest());
+        if (_useSSL && handler is SSLHandler) {
           _log.fine('Use SSL');
           await _socket.startSSL();
-          _handler = (_handler as SSLHandler).nextHandler;
-          await sendBuffer(_handler!.createRequest());
+          _handler = handler.nextHandler;
+          await sendBuffer(handler.createRequest());
           _log.fine('Sent buffer');
           return;
         }
@@ -401,7 +402,7 @@ class ReqRespConnection {
     _handler = null;
   }
 
-  Future sendBuffer(Buffer buffer) {
+  Future<void> sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
       throw MySqlClientError(
           'Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)');
@@ -444,7 +445,7 @@ class ReqRespConnection {
   }
 
   /// This method just sends the handler data.
-  Future _processHandlerNoResponse(Handler handler) {
+  Future<void> _processHandlerNoResponse(Handler handler) {
     if (_handler != null) {
       throw MySqlClientError(
           'Connection cannot process a request for $handler while a request is already in progress for $_handler');

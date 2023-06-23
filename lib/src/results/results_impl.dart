@@ -16,6 +16,7 @@ class ResultsStream extends StreamView<ResultRow> {
       {Stream<ResultRow>? stream}) {
     if (stream != null) {
       var newStream = stream.transform(StreamTransformer.fromHandlers(
+          // ignore: avoid_types_on_closure_parameters
           handleDone: (EventSink<ResultRow> sink) {
         sink.close();
       }));

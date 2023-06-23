@@ -19,15 +19,15 @@ void main() {
 
   setUpAll(() {
     fakeBuffer = FakeBuffer();
-    registerFallbackValue<Buffer>(fakeBuffer);
+    registerFallbackValue(fakeBuffer);
   });
 
   group('Connection', () {
     test('should throw error if buffer is too big', () {
-      final MAX_PACKET_SIZE = 10;
+      const MAX_PACKET_SIZE = 10;
       var socket = MockSocket();
       var cnx = ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
-      final PACKET_SIZE = 11;
+      const PACKET_SIZE = 11;
       var buffer = Buffer(PACKET_SIZE);
       expect(() {
         cnx.sendBuffer(buffer);
@@ -35,7 +35,7 @@ void main() {
     });
 
     test('should send buffer', () async {
-      final MAX_PACKET_SIZE = 16 * 1024 * 1024;
+      const MAX_PACKET_SIZE = 16 * 1024 * 1024;
       var socket = MockSocket();
       var cnx = ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
       when(() => socket.writeBuffer(any<Buffer>()))
@@ -48,9 +48,11 @@ void main() {
       var captured =
           verify(() => socket.writeBuffer(captureAny<Buffer>())).captured;
       expect(captured[0], hasLength(4));
+      // ignore: avoid_dynamic_calls
       expect(captured[0].list, equals([3, 0, 0, 1]));
       captured = verify(() => socket.writeBufferPart(
           captureAny<Buffer>(), captureAny<int>(), captureAny<int>())).captured;
+      // ignore: avoid_dynamic_calls
       expect(captured[0].list, equals([1, 2, 3]));
       expect(captured[1], equals(0));
       expect(captured[2], equals(3));
@@ -60,30 +62,33 @@ void main() {
       captured =
           verify(() => socket.writeBuffer(captureAny<Buffer>())).captured;
       expect(captured[0], hasLength(4));
+      // ignore: avoid_dynamic_calls
       expect(captured[0].list, equals([3, 0, 0, 2]));
       captured = verify(() => socket.writeBufferPart(
           captureAny<Buffer>(), captureAny<int>(), captureAny<int>())).captured;
+      // ignore: avoid_dynamic_calls
       expect(captured[0].list, equals([1, 2, 3]));
       expect(captured[1], equals(0));
       expect(captured[2], equals(3));
     });
 
     test('should send large buffer', () async {
-      final MAX_PACKET_SIZE = 32 * 1024 * 1024;
+      const MAX_PACKET_SIZE = 32 * 1024 * 1024;
       var socket = MockSocket();
       var cnx = ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
 
       /* FIXME(rxlabz) */
-      var buffers = [];
+      var buffers = <List<int>>[];
       when(() => socket.writeBuffer(any<Buffer>())).thenAnswer((mirror) {
         var buffer = mirror.positionalArguments[0];
+        // ignore: avoid_dynamic_calls
         buffers.add(List<int>.from(buffer.list));
         return Future.value(fakeBuffer);
       });
       when(() => socket.writeBufferPart(any<Buffer>(), any<int>(), any<int>()))
           .thenAnswer((_) => Future<Buffer>.value(fakeBuffer));
 
-      final PACKET_SIZE = 17 * 1024 * 1024;
+      const PACKET_SIZE = 17 * 1024 * 1024;
       var buffer = Buffer(PACKET_SIZE);
       await cnx.sendBuffer(buffer);
       verify(() => socket.writeBuffer(any<Buffer>())).called(2);

@@ -51,7 +51,7 @@ List<Object>? get insertValues {
   return values;
 }
 
-List get responseValues {
+List<Object?> get responseValues {
   var values = <Object?>[];
   values.add(126);
   values.add(164);
@@ -168,8 +168,8 @@ List<String> fieldTypes = [
 void main() {
   initializeTest(
       'test1',
-      'create table test1 ('
-          'atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, '
+      'create table test1 '
+          '(atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, '
           'adecimal decimal(20,10), afloat float, adouble double, areal real, '
           'aboolean boolean, abit bit(20), aserial serial, '
           'adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, '
@@ -235,7 +235,7 @@ void main() {
         'adate, adatetime, atimestamp, atime, ayear, '
         'achar, avarchar, atinytext, atext, amediumtext, alongtext, '
         'abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, '
-        'aenum, aset) values'
+        'aenum, aset) values '
         '(?, ?, ?, ?, ?, '
         '?, ?, ?, ?, '
         '?, ?, ?, '
@@ -265,7 +265,7 @@ void main() {
         'adate, adatetime, atimestamp, atime, ayear, '
         'achar, avarchar, atinytext, atext, amediumtext, alongtext, '
         'abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, '
-        'aenum, aset) values'
+        'aenum, aset) values '
         '(?, ?, ?, ?, ?, '
         '?, ?, ?, ?, '
         '?, ?, ?, '
@@ -289,7 +289,7 @@ void main() {
       // make sure the values are the same
       if (row[i] is double) {
         // or at least close
-        expect(row[i], closeTo(responseValues[i] as num, 0.1));
+        expect(row[i], closeTo(responseValues[i] as num, 0.1)); // ignore: cast_nullable_to_non_nullable
       } else {
         expect(row[i], equals(responseValues[i]));
       }
@@ -323,7 +323,7 @@ void main() {
 
   test('blobs with nulls', () async {
     await conn.query(
-        'insert into test1 (aint, atext) values (12345, \'ABC\u0000DEF\')');
+        "insert into test1 (aint, atext) values (12345, 'ABC\u0000DEF')");
     var results =
         (await conn.query('select atext from test1 where aint = 12345'))
             .toList();
@@ -351,7 +351,7 @@ void main() {
         'adate, adatetime, atimestamp, atime, ayear, '
         'achar, avarchar, atinytext, atext, amediumtext, alongtext, '
         'abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, '
-        'aenum, aset) values'
+        'aenum, aset) values '
         '(?, ?, ?, ?, ?, '
         '?, ?, ?, ?, '
         '?, ?, ?, '
@@ -383,7 +383,7 @@ void main() {
         'adate, adatetime, atimestamp, atime, ayear, '
         'achar, avarchar, atinytext, atext, amediumtext, alongtext, '
         'abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, '
-        'aenum, aset) values'
+        'aenum, aset) values '
         '(?, ?, ?, ?, ?, '
         '?, ?, ?, ?, '
         '?, ?, ?, '
@@ -433,7 +433,7 @@ void _showResults(Results results) {
   }
 }
 
-String _typeof(dynamic item) {
+String _typeof(Object? item) {
   if (item is String) {
     return 'String';
   } else if (item is int) {

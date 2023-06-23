@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:mysql1/mysql1.dart';
 
-Future main() async {
+Future<void> main() async {
   // Open a connection (testdb should already exist)
   final conn = await MySqlConnection.connect(
     ConnectionSettings.socket(

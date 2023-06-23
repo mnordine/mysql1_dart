@@ -12,7 +12,7 @@ abstract class ResultRow extends ListBase<dynamic> {
   List<Object?>? values;
 
   /// Values as Map
-  final Map<String, dynamic> fields = <String, dynamic>{};
+  final fields = <String, dynamic>{};
 
   @override
   int get length => values?.length ?? 0;
@@ -23,6 +23,7 @@ abstract class ResultRow extends ListBase<dynamic> {
   }
 
   @override
+  // ignore: avoid_annotating_with_dynamic
   dynamic operator [](dynamic index) {
     if (index is int) {
       return values?[index];
@@ -32,7 +33,7 @@ abstract class ResultRow extends ListBase<dynamic> {
   }
 
   @override
-  void operator []=(int index, dynamic value) {
+  void operator []=(int index, value) {
     throw UnsupportedError('Cannot modify row');
   }
 

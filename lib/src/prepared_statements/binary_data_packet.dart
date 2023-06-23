@@ -14,14 +14,14 @@ import '../results/row.dart';
 class BinaryDataPacket extends ResultRow {
   final Logger log = Logger('BinaryDataPacket');
 
-  BinaryDataPacket.forTests(List? _values) {
+  BinaryDataPacket.forTests(List<Object>? _values) {
     values = _values;
   }
 
   BinaryDataPacket(Buffer buffer, List<Field> fieldPackets) {
     buffer.skip(1);
     var nulls =
-        buffer.readList(((fieldPackets.length + 7 + 2) / 8).floor().toInt());
+        buffer.readList(((fieldPackets.length + 7 + 2) / 8).floor());
     log.fine('Nulls: $nulls');
 
     var shift = 2;

@@ -4,7 +4,7 @@ library mysql1.test.row_test;
 
 import 'package:test/test.dart';
 
-const tableName = 'row1';
+// const tableName = 'row1';
 
 void main() {}
 /*

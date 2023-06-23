@@ -15,23 +15,23 @@ import 'package:mysql1/src/constants.dart';
 
 const int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 
-Buffer _createHandshake(protocolVersion, serverVersion, threadId,
-    scrambleBuffer, serverCapabilities,
-    [serverLanguage,
-    serverStatus,
-    serverCapabilities2,
-    scrambleLength,
-    scrambleBuffer2,
-    pluginName,
-    pluginNameNull]) {
-  var length = 1 + (serverVersion.length as int) + 1 + 4 + 8 + 1 + 2;
+Buffer _createHandshake(int protocolVersion, String serverVersion, int threadId,
+    String scrambleBuffer, int serverCapabilities,
+    [int? serverLanguage,
+    int? serverStatus,
+    int? serverCapabilities2,
+    int? scrambleLength,
+    String? scrambleBuffer2,
+    String? pluginName,
+    int? pluginNameNull]) {
+  var length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
   if (serverLanguage != null) {
     length += 1 + 2 + 2 + 1 + 10;
     if (scrambleBuffer2 != null) {
-      length += (scrambleBuffer2.length as int) + 1;
+      length += scrambleBuffer2.length + 1;
     }
     if (pluginName != null) {
-      length += pluginName.length as int;
+      length += pluginName.length;
       if (pluginNameNull) {
         length++;
       }
@@ -72,7 +72,7 @@ void main() {
       var response = Buffer.fromList([9]);
       expect(() {
         handler.readResponseBuffer(response);
-      }, throwsA(isInstanceOf<MySqlClientError>()));
+      }, throwsA(const isInstanceOf<MySqlClientError>()));
     });
 
     test('set values and does not throw if handshake protocol is 10', () {
@@ -214,7 +214,7 @@ void main() {
       var serverCapabilities1 = CLIENT_PROTOCOL_41;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
       var scrambleBuffer1 = 'abcdefgh';
-      var scrambleBuffer2;
+      String? scrambleBuffer2;
       var scrambleLength = scrambleBuffer1.length;
       var pluginName = 'caching_sha2_password';
       var responseBuffer = _createHandshake(
@@ -322,6 +322,7 @@ void main() {
           CLIENT_SECURE_CONNECTION |
           CLIENT_MULTI_RESULTS;
 
+      // ignore: cast_nullable_to_non_nullable
       var authHandler = response.nextHandler as AuthHandler;
       expect(authHandler.characterSet, equals(CharacterSet.UTF8MB4));
       expect(authHandler.username, equals(user));
@@ -369,6 +370,7 @@ void main() {
       expect(response, isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, isInstanceOf<AuthHandler>());
 
+      // ignore: cast_nullable_to_non_nullable
       var authHandler = response.nextHandler as AuthHandler;
       expect(authHandler.username, equals(user));
       expect(authHandler.password, equals(password));
@@ -470,6 +472,7 @@ void main() {
           CLIENT_SSL |
           CLIENT_MULTI_RESULTS;
 
+      // ignore: cast_nullable_to_non_nullable
       var sslHandler = response.nextHandler as SSLHandler;
       expect(sslHandler.nextHandler, isInstanceOf<AuthHandler>());
       expect(sslHandler.characterSet, equals(CharacterSet.UTF8MB4));

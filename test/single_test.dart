@@ -13,7 +13,7 @@ void main() {
 //  Logger('ConnectionPool').level = Level.ALL;
 //  Logger('Connection.Lifecycle').level = Level.ALL;
 //  Logger('Query').level = Level.ALL;
-  Logger.root.onRecord.listen((LogRecord r) {
+  Logger.root.onRecord.listen((r) {
     print('${r.time}: ${r.loggerName}: ${r.message}');
   });
 
@@ -45,7 +45,7 @@ void main() {
 
   test('queued queries test', () async {
     // Even though we do not await these queries they should be queued.
-    Future _;
+    Future<Results> _;
     _ = conn.query('DROP TABLE IF EXISTS t1');
     _ = conn.query('CREATE TABLE IF NOT EXISTS t1 (a INT)');
     var f1 = conn.query('SELECT * FROM `t1`');
@@ -63,7 +63,8 @@ void main() {
 
   test('Stored procedure', () async {
     await conn.query('DROP PROCEDURE IF EXISTS p');
-    await conn.query('''CREATE PROCEDURE p(a DOUBLE, b DOUBLE)
+    await conn.query('''
+CREATE PROCEDURE p(a DOUBLE, b DOUBLE)
 BEGIN
   SELECT a * b;
 END
@@ -110,7 +111,7 @@ END
     ]);
     var result = await conn.query('SELECT * FROM tjson');
     expect(result.first.first, 3);
-    final obj = json.decode(result.first.last);
+    final obj = json.decode(result.first.last as String);
     expect(obj, {'key': 'val'});
   });
 
@@ -123,8 +124,8 @@ END
       n,
     ]);
     var result = await conn.query('SELECT * FROM timezonetest');
-    DateTime ts = result.first.first;
-    DateTime dt = result.first.last;
+    DateTime ts = result.first.first as DateTime;
+    DateTime dt = result.first.last as DateTime;
     expect(ts.difference(n).inMicroseconds, lessThan(100));
     expect(dt.difference(n).inMicroseconds, lessThan(100));
   });

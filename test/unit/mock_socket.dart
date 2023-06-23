@@ -49,5 +49,5 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   bool setOption(SocketOption option, bool enabled) => true; // No-op
 
   @override
-  Object noSuchMethod(a) => super.noSuchMethod(a);
+  Object noSuchMethod(a) => super.noSuchMethod(a) as Object;
 }

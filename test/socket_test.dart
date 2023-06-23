@@ -18,14 +18,14 @@ class BufferFake extends Fake implements Buffer {}
 
 void main() {
   setUpAll(() {
-    registerFallbackValue<Buffer>(BufferFake());
+    registerFallbackValue(BufferFake());
   });
 
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
   //Logger('BufferedSocket').level = Level.ALL;
 
-  Logger.root.onRecord.listen((LogRecord r) {
+  Logger.root.onRecord.listen((r) {
     print('${r.time}: ${r.loggerName}: ${r.message}');
   });
 
@@ -39,18 +39,18 @@ void main() {
 
   test('timeout connect test', () async {
     // The connect call should raise a timeout.
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12346);
       await MySqlConnection.connect(
-          ConnectionSettings(port: 12346, timeout: Duration(microseconds: 5)));
+          ConnectionSettings(port: 12346, timeout: const Duration(microseconds: 5)));
     } on TimeoutException {
       thrown = true;
     } on SocketException {
       thrown = true;
     } finally {
-      sock?.close();
+      await sock?.close();
     }
     expect(thrown, true);
   });
@@ -79,7 +79,7 @@ void main() {
   });
 
   test('socket closed before handshake', () async {
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12347);
@@ -89,13 +89,13 @@ void main() {
       thrown = true;
       expect(e.message, 'Socket has been closed');
     } finally {
-      sock?.close();
+      await sock?.close();
     }
     expect(thrown, true);
   });
 
   test('socket too many connections on connect', () async {
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12348);
@@ -126,7 +126,7 @@ void main() {
           110,
           115
         ]);
-        socket.close();
+        await socket.close();
       });
       await MySqlConnection.connect(ConnectionSettings(
         port: 12348,
@@ -135,20 +135,20 @@ void main() {
       thrown = true;
       expect(e.message, 'ny connections');
     } finally {
-      sock?.close();
+      await sock?.close();
     }
     expect(thrown, true);
   });
 
   test('bad protocol', () async {
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12348);
       sock.listen((socket) async {
         socket.add([1, 0, 0, 0]);
         socket.add([9]);
-        socket.close();
+        await socket.close();
       });
       await MySqlConnection.connect(ConnectionSettings(
         port: 12348,
@@ -157,26 +157,28 @@ void main() {
       thrown = true;
       expect(e.message, 'Protocol not supported');
     } finally {
-      sock?.close();
+      await sock?.close();
     }
     expect(thrown, true);
   });
 }
 
-final Matcher timeoutMatcher = const _TimeoutException();
+const timeoutMatcher = _TimeoutException();
 
 class _TimeoutException extends TypeMatcher<TimeoutException> {
   const _TimeoutException() : super('TimeoutException');
   @override
-  bool matches(item, Map matchState) => item is TimeoutException;
+  bool matches(item, Map matchState) => item is TimeoutException; // ignore: strict_raw_type
 }
 
+// ignore: unreachable_from_main
 Matcher socketExceptionMatcher(int code) => _SocketException(code);
 
 class _SocketException extends TypeMatcher<SocketException> {
   final int errorCode;
   const _SocketException(this.errorCode) : super('SocketException');
   @override
+  // ignore: strict_raw_type
   bool matches(item, Map matchState) =>
       item is SocketException && item.osError?.errorCode == errorCode;
 }

@@ -1,2 +1,136 @@
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
 
+analyzer:
+  language:
+    strict-inference: true
+    strict-raw-types: true # useful, except for Futures, Completers, Lists used in serialization
+    strict-casts: true
+
+  errors:
+    dead_code: error
+    curly_braces_in_flow_control_structures: ignore
+    unused_element: error
+    unused_import: error
+    unused_local_variable: error
+    avoid_function_literals_in_foreach_calls: ignore
+    directives_ordering: ignore
+    annotate_overrides: ignore
+    depend_on_referenced_packages: ignore
+    prefer_expression_function_bodies: ignore
+    prefer_final_locals: ignore
+    omit_local_variable_types: ignore
+    cascade_invocations: ignore
+    prefer_final_in_for_each: ignore
+    avoid_redundant_argument_values: ignore
+    no_leading_underscores_for_local_identifiers: ignore
+    unnecessary_import: ignore
+    prefer_foreach: ignore
+    avoid_catching_errors: ignore
+    constant_identifier_names: ignore
+    prefer_const_constructors: ignore
+    avoid_positional_boolean_parameters: ignore
+    comment_references: ignore
+    use_setters_to_change_properties: ignore
+    parameter_assignments: ignore
+    sort_unnamed_constructors_first: ignore
+    discarded_futures: ignore
+    only_throw_errors: ignore
+    use_string_in_part_of_directives: ignore
+    use_string_buffers: ignore
+    avoid_setters_without_getters: ignore
+    unreachable_from_main: ignore
+#    cast_nullable_to_non_nullable: ignore
+
+linter:
+  rules:
+    - depend_on_referenced_packages
+    - noop_primitive_operations
+    - use_named_constants
+    - null_check_on_nullable_type_parameter
+    - tighten_type_of_initializing_formals
+    - unnecessary_null_checks
+    - avoid_type_to_string
+    - unnecessary_nullable_for_final_variable_declarations
+    - avoid_returning_null_for_future
+    - use_is_even_rather_than_modulo
+    - use_raw_strings
+    - use_setters_to_change_properties
+    - use_string_buffers
+    - void_checks
+    - cancel_subscriptions
+    - close_sinks
+    - comment_references
+    - literal_only_boolean_expressions
+    - no_adjacent_strings_in_list
+    - throw_in_finally
+    - unnecessary_statements
+    - always_put_required_named_parameters_first
+    - avoid_annotating_with_dynamic
+    - avoid_bool_literals_in_conditional_expressions
+    - avoid_catching_errors
+    - avoid_double_and_int_checks
+    - avoid_escaping_inner_quotes
+    - avoid_field_initializers_in_const_classes
+    - avoid_implementing_value_types
+    - avoid_js_rounded_ints
+    - avoid_positional_boolean_parameters
+    - avoid_private_typedef_functions
+    - avoid_redundant_argument_values
+    - avoid_renaming_method_parameters
+    - avoid_returning_this
+    - avoid_shadowing_type_parameters
+    - avoid_types_on_closure_parameters
+    - avoid_unused_constructor_parameters
+    - avoid_void_async
+    - join_return_with_assignment
+    - leading_newlines_in_multiline_strings
+    - library_private_types_in_public_api
+    - missing_whitespace_between_adjacent_strings
+    - no_runtimeType_toString
+    - omit_local_variable_types
+    - one_member_abstracts
+    - only_throw_errors
+    - parameter_assignments
+    - prefer_asserts_in_initializer_lists
+    - prefer_asserts_with_message
+    - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
+    - prefer_constructors_over_static_methods
+    - prefer_expression_function_bodies
+    - prefer_final_fields
+    - prefer_final_in_for_each
+    - prefer_final_locals
+    - prefer_foreach
+    - prefer_if_elements_to_conditional_expressions
+    - prefer_int_literals
+    - prefer_interpolation_to_compose_strings
+    - prefer_iterable_whereType
+    - prefer_mixin
+    - prefer_single_quotes
+    - sort_unnamed_constructors_first
+    - unnecessary_await_in_return
+    - unnecessary_lambdas
+    - unnecessary_null_aware_assignments
+    - unnecessary_parenthesis
+    - unnecessary_raw_strings
+    - unawaited_futures
+    - avoid_dynamic_calls
+    - cast_nullable_to_non_nullable
+    - avoid_classes_with_only_static_members
+    - avoid_setters_without_getters
+    - eol_at_end_of_file
+    - unnecessary_constructor_name
+    # - unsafe_html
+    # - use_if_null_to_convert_nulls_to_bools
+    - cascade_invocations
+    - use_super_parameters
+    - use_enums
+    - discarded_futures
+    - unnecessary_null_aware_operator_on_extension_on_nullable
+    - unnecessary_to_list_in_spreads
+    - collection_methods_unrelated_type
+    - unreachable_from_main
+    - enable_null_safety
+    - use_string_in_part_of_directives
+    # - unnecessary_breaks

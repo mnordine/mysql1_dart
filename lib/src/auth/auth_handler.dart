@@ -57,6 +57,7 @@ class AuthHandler extends Handler {
 
   AuthHandler(this.username, this.password, this.db, this.scrambleBuffer,
       this.clientFlags, this.maxPacketSize, this.characterSet, this.authPlugin,
+      // ignore: avoid_unused_constructor_parameters
       {bool ssl = false})
       : /*this._ssl = false,*/
         super(Logger('AuthHandler'));
