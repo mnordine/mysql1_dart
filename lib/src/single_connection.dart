@@ -178,6 +178,46 @@ class MySqlConnection implements QueriableConnection {
     return (await queryMulti(sql, [values])).first;
   }
 
+  Future<List<T>> queryMap<T>(String sql, T Function(ResultRow r) f, [List<Object?>? values]) async {
+    if (values == null || values.isEmpty) {
+      final results = await _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
+      return results.map(f).toList();
+    }
+
+    final results = (await queryMulti(sql, [values])).first;
+    return results.map(f).toList();
+  }
+
+  Future<T> queryMapSingle<T>(String sql, T Function(ResultRow r) f, [List<Object?>? values]) async {
+    if (values == null || values.isEmpty) {
+      final results = await _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
+      return results.map(f).single;
+    }
+
+    final results = (await queryMulti(sql, [values])).first;
+    return results.map(f).single;
+  }
+
+  Future<T?> queryMapTrySingle<T>(String sql, T Function(ResultRow r) f, [List<Object?>? values]) async {
+    if (values == null || values.isEmpty) {
+      final results = await _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
+      return results.length == 1 ? results.map(f).single : null;
+    }
+
+    final results = (await queryMulti(sql, [values])).first;
+    return results.length == 1 ? results.map(f).single : null;
+  }
+
+  Future<T?> queryMapTryLast<T>(String sql, T Function(ResultRow r) f, [List<Object?>? values]) async {
+    if (values == null || values.isEmpty) {
+      final results = await _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
+      return results.isNotEmpty ? f(results.last) : null;
+    }
+
+    final results = (await queryMulti(sql, [values])).first;
+    return results.isNotEmpty ? f(results.last) : null;
+  }
+
   /// Run [sql] query multiple times for each set of positional sql parameters in [values].
   ///
   /// e.g. ```queryMulti('INSERT INTO USERS (name) VALUES (?)', ['Adam', 'Eve'])```.
@@ -223,6 +263,9 @@ class MySqlConnection implements QueriableConnection {
 
 abstract class QueriableConnection {
   Future<Results> query(String sql, [List<Object?>? values]);
+  Future<List<T>> queryMap<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]);
+  Future<T> queryMapSingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]);
+  Future<T?> queryMapTrySingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]);
   Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values);
 }
 
@@ -233,6 +276,18 @@ class TransactionContext implements QueriableConnection {
   @override
   Future<Results> query(String sql, [List<Object?>? values]) =>
       _conn.query(sql, values);
+
+  @override
+  Future<List<T>> queryMap<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
+      _conn.queryMap(sql, f, values);
+  @override
+
+  Future<T> queryMapSingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
+      _conn.queryMapSingle(sql, f, values);
+
+  @override
+  Future<T?> queryMapTrySingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
+      _conn.queryMapTrySingle(sql, f, values);
 
   @override
   Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values) =>
