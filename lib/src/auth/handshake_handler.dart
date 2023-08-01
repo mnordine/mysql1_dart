@@ -17,27 +17,17 @@ enum AuthPlugin {
   cachingSha2Password,
 }
 
-AuthPlugin authPluginFromString(String v) {
-  switch (v) {
-    case 'mysql_native_password':
-      return AuthPlugin.mysqlNativePassword;
-    case 'caching_sha2_password':
-      return AuthPlugin.cachingSha2Password;
-    default:
-      throw MySqlClientError('Authentication plugin not supported: $v');
-  }
-}
+AuthPlugin authPluginFromString(String v) => switch (v) {
+  'mysql_native_password' => AuthPlugin.mysqlNativePassword,
+  'caching_sha2_password' => AuthPlugin.cachingSha2Password,
+  _ => throw MySqlClientError('Authentication plugin not supported: $v'),
+};
 
-String authPluginToString(AuthPlugin v) {
-  switch (v) {
-    case AuthPlugin.mysqlNativePassword:
-      return 'mysql_native_password';
-    case AuthPlugin.cachingSha2Password:
-      return 'caching_sha2_password';
-    default:
-      return '';
-  }
-}
+String authPluginToString(AuthPlugin v) => switch (v) {
+  AuthPlugin.mysqlNativePassword => 'mysql_native_password',
+  AuthPlugin.cachingSha2Password => 'caching_sha2_password',
+  _ => '',
+};
 
 class HandshakeHandler extends Handler {
   static const String MYSQL_NATIVE_PASSWORD = 'mysql_native_password';

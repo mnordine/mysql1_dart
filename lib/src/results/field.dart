@@ -16,68 +16,37 @@ class Field {
   final int? decimals;
   final int? defaultValue;
 
-  String get typeString {
-    switch (type) {
-      case 0x00:
-        return 'DECIMAL';
-      case 0x01:
-        return 'TINY';
-      case 0x02:
-        return 'SHORT';
-      case 0x03:
-        return 'LONG';
-      case 0x04:
-        return 'FLOAT';
-      case 0x05:
-        return 'DOUBLE';
-      case 0x06:
-        return 'NULL';
-      case 0x07:
-        return 'TIMESTAMP';
-      case 0x08:
-        return 'LONGLONG';
-      case 0x09:
-        return 'INT24';
-      case 0x0a:
-        return 'DATE';
-      case 0x0b:
-        return 'TIME';
-      case 0x0c:
-        return 'DATETIME';
-      case 0x0d:
-        return 'YEAR';
-      case 0x0e:
-        return 'NEWDATE';
-      case 0x0f:
-        return 'VARCHAR';
-      case 0x10:
-        return 'BIT';
-      case 0xf5:
-        return 'JSON';
-      case 0xf6:
-        return 'NEWDECIMAL';
-      case 0xf7:
-        return 'ENUM';
-      case 0xf8:
-        return 'SET';
-      case 0xf9:
-        return 'TINY_BLOB';
-      case 0xfa:
-        return 'MEDIUM_BLOB';
-      case 0xfb:
-        return 'LONG_BLOB';
-      case 0xfc:
-        return 'BLOB';
-      case 0xfd:
-        return 'VAR_STRING';
-      case 0xfe:
-        return 'STRING';
-      case 0xff:
-        return 'GEOMETRY';
-      default:
-        return 'UNKNOWN';
-    }
-  }
+  String get typeString => switch (type) {
+    0x00 => 'DECIMAL',
+    0x01 => 'TINY',
+    0x02 => 'SHORT',
+    0x03 => 'LONG',
+    0x04 => 'FLOAT',
+    0x05 => 'DOUBLE',
+    0x06 => 'NULL',
+    0x07 => 'TIMESTAMP',
+    0x08 => 'LONGLONG',
+    0x09 => 'INT24',
+    0x0a => 'DATE',
+    0x0b => 'TIME',
+    0x0c => 'DATETIME',
+    0x0d => 'YEAR',
+    0x0e => 'NEWDATE',
+    0x0f => 'VARCHAR',
+    0x10 => 'BIT',
+    0xf5 => 'JSON',
+    0xf6 => 'NEWDECIMAL',
+    0xf7 => 'ENUM',
+    0xf8 => 'SET',
+    0xf9 => 'TINY_BLOB',
+    0xfa => 'MEDIUM_BLOB',
+    0xfb => 'LONG_BLOB',
+    0xfc => 'BLOB',
+    0xfd => 'VAR_STRING',
+    0xfe => 'STRING',
+    0xff => 'GEOMETRY',
+    _ => 'UNKNOWN',
+  };
 
   Field._internal(
       this.catalog,

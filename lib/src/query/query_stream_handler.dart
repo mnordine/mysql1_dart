@@ -57,15 +57,9 @@ class QueryStreamHandler extends Handler {
         }
       } else {
         switch (_state) {
-          case STATE_HEADER_PACKET:
-            _handleHeaderPacket(response);
-            break;
-          case STATE_FIELD_PACKETS:
-            _handleFieldPacket(response);
-            break;
-          case STATE_ROW_PACKETS:
-            _handleRowPacket(response);
-            break;
+          case STATE_HEADER_PACKET: _handleHeaderPacket(response);
+          case STATE_FIELD_PACKETS: _handleFieldPacket(response);
+          case STATE_ROW_PACKETS: _handleRowPacket(response);
         }
       }
     } else if (packet is OkPacket) {

@@ -133,4 +133,6 @@ linter:
     - unreachable_from_main
     - enable_null_safety
     - use_string_in_part_of_directives
-    # - unnecessary_breaks
+    - unnecessary_breaks
+    - type_literal_in_constant_pattern
+    - invalid_case_patterns

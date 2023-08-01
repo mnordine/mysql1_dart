@@ -230,7 +230,6 @@ class BinaryDataPacket extends ResultRow {
         //Are there any other types a mysql server can return?
         log.fine('Field type not implemented yet ${field.type}');
         log.fine(buffer.readList(8).toString());
-        break;
       default:
         log.fine('Unsupported field type ${field.type}');
         break;

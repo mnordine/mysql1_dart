@@ -147,61 +147,40 @@ class Buffer {
   /// Reads a length coded binary from the buffer. This is specified in the mysql docs.
   /// It will read up to nine bytes from the stream, depending on the first byte.
   /// Returns an unsigned integer.
-  int? readLengthCodedBinary() {
-    var first = readByte();
-    if (first < 251) {
-      return first;
-    }
-    switch (first) {
-      case 251:
-        return null;
-      case 252:
-        return readUint16();
-      case 253:
-        return readUint24();
-      case 254:
-        return readUint64();
-    }
-    throw ArgumentError('value is out of range');
-  }
+  int? readLengthCodedBinary() => switch (readByte()) {
+    final a when a < 251 => a,
+    251 => null,
+    252 => readUint16(),
+    253 => readUint24(),
+    254 => readUint64(),
+    _ => throw ArgumentError('value is out of range'),
+  };
 
-  static int measureLengthCodedBinary(int value) {
-    if (value < 251) {
-      return 1;
-    }
-    if (value < (2 << 15)) {
-      return 3;
-    }
-    if (value < (2 << 23)) {
-      return 4;
-    }
-    if (value < (2 << 63)) {
-      return 5;
-    }
-    throw ArgumentError('value is out of range');
-  }
+  static int measureLengthCodedBinary(int value) => switch (value) {
+    < 251 => 1,
+    < 2 >> 15 => 3,
+    < 2 << 23 => 4,
+    < 2 << 63 => 5,
+    _ => throw ArgumentError('value is out of range'),
+  };
 
   /// Will write a length coded binary value, once implemented!
-  void writeLengthCodedBinary(int value) {
-    if (value < 251) {
-      writeByte(value);
-      return;
-    }
-    if (value < (2 << 15)) {
+  void writeLengthCodedBinary(int value) => switch (value) {
+    < 251 => writeByte(value),
+    < 2 << 15 => () {
       writeByte(0xfc);
       writeUint16(value);
-      return;
-    }
-    if (value < (2 << 23)) {
+    },
+    < 2 << 23 => () {
       writeByte(0xfd);
       writeUint24(value);
-      return;
-    }
-    if (value < (2 << 63)) {
+    },
+    < 2 << 63 => () {
       writeByte(0xfe);
       writeUint64(value);
-    }
-  }
+    },
+    _ => null,
+  };
 
   /// Returns a length coded string, read from the buffer.
   String? readLengthCodedString() {
