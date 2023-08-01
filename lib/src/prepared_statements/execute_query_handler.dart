@@ -64,98 +64,49 @@ class ExecuteQueryHandler extends Handler {
     return buffer;
   }
 
-  Object? prepareValue(Object? value) {
-    if (value == null) {
-      return null;
-    }
+  Object? prepareValue(Object? value) => switch (value) {
+    null => null,
+    int x => _prepareInt(x),
+    double x => _prepareDouble(x),
+    DateTime x => _prepareDateTime(x),
+    bool x => _prepareBool(x),
+    List<int> xs => _prepareList(xs),
+    Blob blob => _prepareBlob(blob),
+    _ => _prepareString(value),
+  };
 
-    if (value is int) {
-      return _prepareInt(value);
-    }
-    if (value is double) {
-      return _prepareDouble(value);
-    }
-    if (value is DateTime) {
-      return _prepareDateTime(value);
-    }
-    if (value is bool) {
-      return _prepareBool(value);
-    }
-    if (value is List<int>) {
-      return _prepareList(value);
-    }
-    if (value is Blob) {
-      return _prepareBlob(value);
-    }
-    return _prepareString(value);
-  }
+  int measureValue(Object? value, Object? preparedValue) => switch ((value, preparedValue)) {
+    (null, _) => 0,
+    (int a, _) => _measureInt(a, preparedValue),
+    (double a, List<Object> xs) => _measureDouble(a, xs),
+    (DateTime _, _) => _measureDateTime(value, preparedValue),
+    (bool _, _) => _measureBool(value, preparedValue),
+    (List<int> xs, Object b) => _measureList(xs, b),
+    (Blob blob, List<Object> xs) => _measureBlob(blob, xs),
+    (String a, List<Object> xs) => _measureString(a, xs),
+    _ => throw ArgumentError('cannot measure $value'),
+  };
 
-  int measureValue(Object? value, Object preparedValue) {
-    if (value != null) {
-      if (value is int) {
-        return _measureInt(value, preparedValue);
-      } else if (value is double) {
-        return _measureDouble(value, preparedValue);
-      } else if (value is DateTime) {
-        return _measureDateTime(value, preparedValue);
-      } else if (value is bool) {
-        return _measureBool(value, preparedValue);
-      } else if (value is List<int>) {
-        return _measureList(value, preparedValue);
-      } else if (value is Blob) {
-        return _measureBlob(value, preparedValue);
-      } else {
-        return _measureString(value, preparedValue);
-      }
-    }
-    return 0;
-  }
+  int _getType(Object? value) => switch (value) {
+    null => FIELD_TYPE_NULL,
+    int _ => FIELD_TYPE_LONGLONG,
+    DateTime _ => FIELD_TYPE_DATETIME,
+    bool _ => FIELD_TYPE_TINY,
+    List<int> _ || Blob _ => FIELD_TYPE_BLOB,
+    _ => FIELD_TYPE_VARCHAR,
+  };
 
-  int _getType(Object? value) {
-    if (value == null) {
-      return FIELD_TYPE_NULL;
-    }
-    if (value is int) {
-      return FIELD_TYPE_LONGLONG;
-    }
-    if (value is double) {
-      return FIELD_TYPE_VARCHAR;
-    }
-    if (value is DateTime) {
-      return FIELD_TYPE_DATETIME;
-    }
-    if (value is bool) {
-      return FIELD_TYPE_TINY;
-    }
-    if (value is List<int>) {
-      return FIELD_TYPE_BLOB;
-    }
-    if (value is Blob) {
-      return FIELD_TYPE_BLOB;
-    }
-
-    return FIELD_TYPE_VARCHAR;
-  }
-
-  void _writeValue(Object? value, Object preparedValue, Buffer buffer) {
-    if (value != null) {
-      if (value is int) {
-        _writeInt(value, preparedValue, buffer);
-      } else if (value is double) {
-        _writeDouble(value, preparedValue, buffer);
-      } else if (value is DateTime) {
-        _writeDateTime(value, preparedValue, buffer);
-      } else if (value is bool) {
-        _writeBool(value, preparedValue, buffer);
-      } else if (value is List<int>) {
-        _writeList(value, preparedValue, buffer);
-      } else if (value is Blob) {
-        _writeBlob(value, preparedValue, buffer);
-      } else {
-        _writeString(value, preparedValue, buffer);
-      }
-    }
-  }
+  void _writeValue(Object? value, Object preparedValue, Buffer buffer) => switch ((value, preparedValue)) {
+    (null, _) => () {},
+    (int x, _) => _writeInt(x, preparedValue, buffer),
+    (double x, List<int> xs) => _writeDouble(x, xs, buffer),
+    (DateTime x, _) => _writeDateTime(x, preparedValue, buffer),
+    (bool x, _) => _writeBool(x, preparedValue, buffer),
+    (List<int> xs, _) => _writeList(xs, preparedValue, buffer),
+    (Blob blob, List<int> xs) => _writeBlob(blob, xs, buffer),
+    (String s, List<int> xs) => _writeString(s, xs, buffer),
+    _ => throw ArgumentError('cannot write $value'),
+  };
 
   int _prepareInt(int value) {
     return value;
