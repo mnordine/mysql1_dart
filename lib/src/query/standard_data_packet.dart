@@ -79,13 +79,12 @@ class StandardDataPacket extends ResultRow {
         var s = utf8.decode(list);
         return parseDateTimeInUtc(s);
       case FIELD_TYPE_TIME: // time
-        var s = utf8.decode(list);
-        var parts = s.split(':');
+        final [hours, minutes, seconds, ...] = utf8.decode(list).split(':');
         return Duration(
             days: 0,
-            hours: int.parse(parts[0]),
-            minutes: int.parse(parts[1]),
-            seconds: int.parse(parts[2]),
+            hours: int.parse(hours),
+            minutes: int.parse(minutes),
+            seconds: int.parse(seconds),
             milliseconds: 0);
       case FIELD_TYPE_YEAR: // year
         var s = utf8.decode(list);
