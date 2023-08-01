@@ -14,10 +14,10 @@ void initializeTest([String? tableName, String? createSql, String? insertSql]) {
 
   var s = ConnectionSettings(
     user: options.getString('user'),
-    password: options.getString('password', null),
-    port: options.getInt('port', 3306)!,
+    password: options.getString('password'),
+    port: options.getInt('port', defaultValue: 3306)!,
     db: options.getString('db'),
-    host: options.getString('host', 'localhost')!,
+    host: options.getString('host', defaultValue: 'localhost')!,
   );
 
   setUp(() async {
