@@ -16,7 +16,7 @@ class StandardDataPacket extends ResultRow {
   final Logger log = Logger('StandardDataPacket');
 
   StandardDataPacket(Buffer buffer, List<Field> fieldPackets) {
-    values = List<dynamic>.filled(fieldPackets.length, null);
+    values = List<Object?>.filled(fieldPackets.length, null);
     for (var i = 0; i < fieldPackets.length; i++) {
       var field = fieldPackets[i];
 

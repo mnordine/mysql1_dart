@@ -35,7 +35,7 @@ class ExecuteQueryHandler extends Handler {
 
   final PreparedQuery? _preparedQuery;
   final List<Object?> _values;
-  List<Object>? preparedValues;
+  List<Object?>? preparedValues;
   late OkPacket _okPacket;
   final bool _executed;
   bool _cancelled = false;
@@ -144,7 +144,7 @@ class ExecuteQueryHandler extends Handler {
         preparedValue.length;
   }
 
-  void _writeDouble(Object value, List<Object> preparedValue, Buffer buffer) {
+  void _writeDouble(Object value, List<int> preparedValue, Buffer buffer) {
     log.fine('DOUBLE: $value');
 
     buffer.writeLengthCodedBinary(preparedValue.length);
@@ -202,7 +202,7 @@ class ExecuteQueryHandler extends Handler {
     return Buffer.measureLengthCodedBinary(value.length) + value.length;
   }
 
-  void _writeList(List<Object> value, Object preparedValue, Buffer buffer) {
+  void _writeList(List<int> value, Object preparedValue, Buffer buffer) {
     log.fine('LIST: $value');
     buffer.writeLengthCodedBinary(value.length);
     buffer.writeList(value);
@@ -216,7 +216,7 @@ class ExecuteQueryHandler extends Handler {
     return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
   }
 
-  void _writeBlob(Object value, List<Object> preparedValue, Buffer buffer) {
+  void _writeBlob(Object value, List<int> preparedValue, Buffer buffer) {
     log.fine('BLOB: $value');
     buffer.writeLengthCodedBinary(preparedValue.length);
     buffer.writeList(preparedValue);
@@ -230,7 +230,7 @@ class ExecuteQueryHandler extends Handler {
     return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
   }
 
-  void _writeString(String value, List<Object> preparedValue, Buffer buffer) {
+  void _writeString(String value, List<int> preparedValue, Buffer buffer) {
     log.fine('STRING: $value');
     buffer.writeLengthCodedBinary(preparedValue.length);
     buffer.writeList(preparedValue);
@@ -266,7 +266,7 @@ class ExecuteQueryHandler extends Handler {
       buffer.writeByte(1);
       buffer.writeList(types);
       for (var i = 0; i < _values.length; i++) {
-        _writeValue(_values[i], preparedValues![i], buffer);
+        _writeValue(_values[i], preparedValues![i]!, buffer);
       }
     } else {
       buffer.writeByte(0);

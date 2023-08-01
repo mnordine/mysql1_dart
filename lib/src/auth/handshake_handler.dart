@@ -30,7 +30,7 @@ String authPluginToString(AuthPlugin v) => switch (v) {
 };
 
 class HandshakeHandler extends Handler {
-  static const String MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
+  static const MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
 
   final String? _user;
   final String? _password;
