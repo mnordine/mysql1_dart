@@ -116,7 +116,7 @@ class ExecuteQueryHandler extends Handler {
     return 8;
   }
 
-  void _writeInt(int value, Object preparedValue, Buffer buffer) {
+  void _writeInt(int value, Object? preparedValue, Buffer buffer) {
 //          if (value < 128 && value > -127) {
 //            log.fine("TINYINT: value");
 //            types.add(FIELD_TYPE_TINY);
