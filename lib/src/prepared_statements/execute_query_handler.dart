@@ -96,7 +96,7 @@ class ExecuteQueryHandler extends Handler {
     _ => FIELD_TYPE_VARCHAR,
   };
 
-  void _writeValue(Object? value, Object preparedValue, Buffer buffer) => switch ((value, preparedValue)) {
+  void _writeValue(Object? value, Object? preparedValue, Buffer buffer) => switch ((value, preparedValue)) {
     (null, _) => () {},
     (int x, _) => _writeInt(x, preparedValue, buffer),
     (double x, List<int> xs) => _writeDouble(x, xs, buffer),
@@ -266,7 +266,7 @@ class ExecuteQueryHandler extends Handler {
       buffer.writeByte(1);
       buffer.writeList(types);
       for (var i = 0; i < _values.length; i++) {
-        _writeValue(_values[i], preparedValues![i]!, buffer);
+        _writeValue(_values[i], preparedValues![i], buffer);
       }
     } else {
       buffer.writeByte(0);
