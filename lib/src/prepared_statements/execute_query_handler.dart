@@ -168,7 +168,7 @@ class ExecuteQueryHandler extends Handler {
     return 8;
   }
 
-  void _writeDateTime(DateTime value, Object preparedValue, Buffer buffer) {
+  void _writeDateTime(DateTime value, Object? preparedValue, Buffer buffer) {
     // TODO remove Date eventually
     log.fine('DATE: $value');
     buffer.writeByte(7);
@@ -189,7 +189,7 @@ class ExecuteQueryHandler extends Handler {
     return 1;
   }
 
-  void _writeBool(bool value, preparedValue, Buffer buffer) {
+  void _writeBool(bool value, Object? preparedValue, Buffer buffer) {
     log.fine('BOOL: $value');
     buffer.writeByte(value ? 1 : 0);
   }
@@ -202,7 +202,7 @@ class ExecuteQueryHandler extends Handler {
     return Buffer.measureLengthCodedBinary(value.length) + value.length;
   }
 
-  void _writeList(List<int> value, Object preparedValue, Buffer buffer) {
+  void _writeList(List<int> value, Object? preparedValue, Buffer buffer) {
     log.fine('LIST: $value');
     buffer.writeLengthCodedBinary(value.length);
     buffer.writeList(value);
