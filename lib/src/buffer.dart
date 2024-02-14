@@ -165,22 +165,21 @@ class Buffer {
   };
 
   /// Will write a length coded binary value, once implemented!
-  void writeLengthCodedBinary(int value) => switch (value) {
-    < 251 => writeByte(value),
-    < 2 << 15 => () {
-      writeByte(0xfc);
-      writeUint16(value);
-    },
-    < 2 << 23 => () {
-      writeByte(0xfd);
-      writeUint24(value);
-    },
-    < 2 << 63 => () {
-      writeByte(0xfe);
-      writeUint64(value);
-    },
-    _ => null,
-  };
+  void writeLengthCodedBinary(int value) {
+    switch (value) {
+      case < 251: writeByte(value);
+      case < 2 << 15:
+        writeByte(0xfc);
+        writeUint16(value);
+      case < 2 << 23:
+        writeByte(0xfd);
+        writeUint24(value);
+      case < 2 << 63:
+        writeByte(0xfe);
+        writeUint64(value);
+      default: throw ArgumentError('$value out of range');
+    }
+  }
 
   /// Returns a length coded string, read from the buffer.
   String? readLengthCodedString() {
