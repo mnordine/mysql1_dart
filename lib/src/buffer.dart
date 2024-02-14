@@ -158,7 +158,7 @@ class Buffer {
 
   static int measureLengthCodedBinary(int value) => switch (value) {
     < 251 => 1,
-    < 2 >> 15 => 3,
+    < 2 << 15 => 3,
     < 2 << 23 => 4,
     < 2 << 63 => 5,
     _ => throw ArgumentError('value is out of range'),
