@@ -286,32 +286,74 @@ class TransactionContext implements QueriableConnection {
   TransactionContext._(this._conn);
 
   @override
-  Future<Results> query(String sql, [List<Object?>? values]) =>
-      _conn.query(sql, values);
+  Future<Results> query(String sql, [List<Object?>? values]) async {
+    try {
+      return await _conn.query(sql, values);
+    } catch (e, stack) {
+      final newStack = StackTrace.fromString('$stack${StackTrace.current}');
+      throw Error.throwWithStackTrace(e, newStack);
+    }
+  }
 
   @override
-  Future<List<T>> queryMap<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
-      _conn.queryMap(sql, f, values);
-  @override
-
-  Future<T> queryMapSingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
-      _conn.queryMapSingle(sql, f, values);
-
-  @override
-  Future<T?> queryMapTrySingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
-      _conn.queryMapTrySingle(sql, f, values);
+  Future<List<T>> queryMap<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) async {
+    try {
+      return await _conn.queryMap(sql, f, values);
+    } catch (e, stack) {
+      final newStack = StackTrace.fromString('$stack${StackTrace.current}');
+      throw Error.throwWithStackTrace(e, newStack);
+    }
+  }
 
   @override
-  Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values) =>
-      _conn.queryMulti(sql, values);
+  Future<T> queryMapSingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) async {
+    try {
+      return await _conn.queryMapSingle(sql, f, values);
+    } catch (e, stack) {
+      final newStack = StackTrace.fromString('$stack${StackTrace.current}');
+      throw Error.throwWithStackTrace(e, newStack);
+    }
+  }
 
   @override
-  Future<T?> queryMapTryLast<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
-      _conn.queryMapTryLast(sql, f, values);
+  Future<T?> queryMapTrySingle<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) async {
+    try {
+      return await _conn.queryMapTrySingle(sql, f, values);
+    } catch (e, stack) {
+      final newStack = StackTrace.fromString('$stack${StackTrace.current}');
+      throw Error.throwWithStackTrace(e, newStack);
+    }
+  }
 
   @override
-  Future<T> queryMapLast<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) =>
-      _conn.queryMapLast(sql, f, values);
+  Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values) async {
+    try {
+      return await _conn.queryMulti(sql, values);
+    } catch (e, stack) {
+      final newStack = StackTrace.fromString('$stack${StackTrace.current}');
+      throw Error.throwWithStackTrace(e, newStack);
+    }
+  }
+
+  @override
+  Future<T?> queryMapTryLast<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) async {
+    try {
+      return await _conn.queryMapTryLast(sql, f, values);
+    } catch (e, stack) {
+      final newStack = StackTrace.fromString('$stack${StackTrace.current}');
+      throw Error.throwWithStackTrace(e, newStack);
+    }
+  }
+
+  @override
+  Future<T> queryMapLast<T>(String sql, T Function(ResultRow) f, [List<Object?>? values]) async {
+    try {
+      return await _conn.queryMapLast(sql, f, values);
+    } catch (e, stack) {
+      final newStack = StackTrace.fromString('$stack${StackTrace.current}');
+      throw Error.throwWithStackTrace(e, newStack);
+    }
+  }
 
   void rollback() => throw _RollbackError();
 }
