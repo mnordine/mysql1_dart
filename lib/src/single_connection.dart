@@ -29,6 +29,16 @@ import 'results/row.dart';
 
 final Logger _log = Logger('MySqlConnection');
 
+enum IsolationLevel {
+  readUncommitted('READ UNCOMMITTED'),
+  readCommitted('READ COMMITTED'),
+  repeatableRead('REPEATABLE READ'),
+  serializable('SERIALIZABLE');
+
+  final String value;
+  const IsolationLevel(this.value);
+}
+
 class ConnectionSettings {
   String host;
   int port;
@@ -257,8 +267,10 @@ class MySqlConnection implements QueriableConnection {
     return ret;
   }
 
-  Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock) async {
+  Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock,
+    {IsolationLevel isolationLevel = IsolationLevel.repeatableRead}) async {
     final T result;
+    await query('set transaction isolation level ${isolationLevel.value}');
     await query('start transaction');
     try {
       result = await queryBlock(TransactionContext._(this));
