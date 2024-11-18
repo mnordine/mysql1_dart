@@ -111,6 +111,8 @@ class MySqlConnection implements QueriableConnection {
 
   MySqlConnection(this._timeout, this._conn);
 
+  IsolationLevel _currentIsolationLevel = _defaultIsolationLevel;
+
   /// Close the connection
   ///
   /// This method will never throw
@@ -272,7 +274,12 @@ class MySqlConnection implements QueriableConnection {
   Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock,
     {IsolationLevel isolationLevel = _defaultIsolationLevel}) async {
     final T result;
-    await query('set transaction isolation level ${isolationLevel.value}');
+
+    if (_currentIsolationLevel != isolationLevel) {
+      await query('set transaction isolation level ${isolationLevel.value}');
+      _currentIsolationLevel = isolationLevel;
+    }
+
     await query('start transaction');
     try {
       result = await queryBlock(TransactionContext._(this));
