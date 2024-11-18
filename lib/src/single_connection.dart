@@ -99,6 +99,8 @@ class ConnectionSettings {
         characterSet = o.characterSet;
 }
 
+const _defaultIsolationLevel = IsolationLevel.repeatableRead;
+
 /// Represents a connection to the database. Use [connect] to open a connection. You
 /// must call [close] when you are done.
 class MySqlConnection implements QueriableConnection {
@@ -268,7 +270,7 @@ class MySqlConnection implements QueriableConnection {
   }
 
   Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock,
-    {IsolationLevel isolationLevel = IsolationLevel.repeatableRead}) async {
+    {IsolationLevel isolationLevel = _defaultIsolationLevel}) async {
     final T result;
     await query('set transaction isolation level ${isolationLevel.value}');
     await query('start transaction');
