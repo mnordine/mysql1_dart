@@ -47,6 +47,8 @@ class ConnectionSettings {
   String? db;
   bool useCompression;
   bool useSSL;
+  bool allowPublicKeyRetrieval;
+  String? rsaPublicKey;
   int maxPacketSize;
   int characterSet;
 
@@ -61,6 +63,8 @@ class ConnectionSettings {
       this.db,
       this.useCompression = false,
       this.useSSL = false,
+      this.allowPublicKeyRetrieval = false,
+      this.rsaPublicKey,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
       this.characterSet = CharacterSet.UTF8MB4});
@@ -72,6 +76,8 @@ class ConnectionSettings {
           String? db,
           bool useCompression = false,
           bool useSSL = false,
+          bool allowPublicKeyRetrieval = false,
+          String? rsaPublicKey,
           int maxPacketSize = 16 * 1024 * 1024,
           Duration timeout = const Duration(seconds: 30),
           int characterSet = CharacterSet.UTF8MB4}) =>
@@ -82,6 +88,8 @@ class ConnectionSettings {
           db: db,
           useCompression: useCompression,
           useSSL: useSSL,
+          allowPublicKeyRetrieval: allowPublicKeyRetrieval,
+          rsaPublicKey: rsaPublicKey,
           maxPacketSize: maxPacketSize,
           timeout: timeout,
           characterSet: characterSet);
@@ -94,6 +102,8 @@ class ConnectionSettings {
         db = o.db,
         useCompression = o.useCompression,
         useSSL = o.useSSL,
+        allowPublicKeyRetrieval = o.allowPublicKeyRetrieval,
+        rsaPublicKey = o.rsaPublicKey,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
         characterSet = o.characterSet;
@@ -172,7 +182,8 @@ class MySqlConnection implements QueriableConnection {
     });
 
     Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize,
-        c.characterSet, c.db, c.useCompression, c.useSSL);
+        c.characterSet, c.db, c.useCompression, c.useSSL,
+        c.allowPublicKeyRetrieval, c.rsaPublicKey);
     handshakeCompleter = Completer<void>();
     conn =
         ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);

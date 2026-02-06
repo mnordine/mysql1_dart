@@ -37,6 +37,8 @@ class HandshakeHandler extends Handler {
   final String? _db;
   final int _maxPacketSize;
   final int _characterSet;
+  final bool _allowPublicKeyRetrieval;
+  final String? _rsaPublicKey;
 
   int? protocolVersion;
   String? serverVersion;
@@ -51,9 +53,13 @@ class HandshakeHandler extends Handler {
   bool useCompression = false;
   bool useSSL = false;
 
-  HandshakeHandler(
-      this._user, this._password, this._maxPacketSize, this._characterSet,
-      [String? db, this.useCompression = false, this.useSSL = false])
+  HandshakeHandler(this._user, this._password, this._maxPacketSize,
+      this._characterSet,
+      [String? db,
+      this.useCompression = false,
+      this.useSSL = false,
+      this._allowPublicKeyRetrieval = false,
+      this._rsaPublicKey])
       : _db = db,
         super(Logger('HandshakeHandler'));
 
@@ -154,24 +160,28 @@ class HandshakeHandler extends Handler {
     if (useSSL) {
       return HandlerResponse(
           nextHandler: SSLHandler(
-              clientFlags,
-              _maxPacketSize,
-              _characterSet,
-              AuthHandler(
-                _user,
-                _password,
-                _db,
-                scrambleBuffer,
                 clientFlags,
                 _maxPacketSize,
                 _characterSet,
-                _authPlugin,
-                ssl: true,
-              )));
+                AuthHandler(
+                  _user,
+                  _password,
+                  _db,
+                  scrambleBuffer,
+                  clientFlags,
+                  _maxPacketSize,
+                  _characterSet,
+                  _authPlugin,
+                  ssl: true,
+                  allowPublicKeyRetrieval: _allowPublicKeyRetrieval,
+                  rsaPublicKey: _rsaPublicKey,
+                )));
     }
 
     return HandlerResponse(
         nextHandler: AuthHandler(_user, _password, _db, scrambleBuffer,
-            clientFlags, _maxPacketSize, _characterSet, _authPlugin));
+            clientFlags, _maxPacketSize, _characterSet, _authPlugin,
+            allowPublicKeyRetrieval: _allowPublicKeyRetrieval,
+            rsaPublicKey: _rsaPublicKey));
   }
 }
