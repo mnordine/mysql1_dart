@@ -166,6 +166,7 @@ class HandshakeHandler extends Handler {
                 _maxPacketSize,
                 _characterSet,
                 _authPlugin,
+                ssl: true,
               )));
     }
 
