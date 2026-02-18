@@ -51,6 +51,8 @@ List<int> _makeCachingSha2Password(List<int> scrambler, String password) {
 }
 
 class AuthHandler extends Handler {
+  static final _publicKeyCache = <String, String>{};
+
   final String? username;
   final String? password;
   final String? db;
@@ -63,6 +65,7 @@ class AuthHandler extends Handler {
   AuthPlugin get authPlugin => _authPlugin;
   final bool _ssl;
   final bool _allowPublicKeyRetrieval;
+  final String? _publicKeyCacheKey;
   String? _rsaPublicKey;
   bool _awaitingPublicKey = false;
   Buffer? _pendingRequest;
@@ -78,12 +81,17 @@ class AuthHandler extends Handler {
       AuthPlugin authPlugin,
       {bool ssl = false,
       bool allowPublicKeyRetrieval = false,
-      String? rsaPublicKey})
+      String? rsaPublicKey,
+      String? publicKeyCacheKey})
       : _scrambleBuffer = scrambleBuffer,
         _authPlugin = authPlugin,
         _ssl = ssl,
         _allowPublicKeyRetrieval = allowPublicKeyRetrieval,
-        _rsaPublicKey = rsaPublicKey,
+        _publicKeyCacheKey = publicKeyCacheKey,
+        _rsaPublicKey = rsaPublicKey ??
+            (publicKeyCacheKey == null
+                ? null
+                : _publicKeyCache[publicKeyCacheKey]),
         super(Logger('AuthHandler'));
 
   List<int> getHash() {
@@ -191,6 +199,10 @@ class AuthHandler extends Handler {
           .decode(keyBytes, allowMalformed: true)
           .replaceAll('\u0000', '')
           .trim();
+      final cacheKey = _publicKeyCacheKey;
+      if (_rsaPublicKey != null && cacheKey != null) {
+        _publicKeyCache[cacheKey] = _rsaPublicKey!;
+      }
       _awaitingPublicKey = false;
       return _sendEncryptedPassword();
     }
@@ -218,6 +230,7 @@ class AuthHandler extends Handler {
           _awaitingPublicKey = true;
           return HandlerResponse(nextHandler: this);
         }
+        print('using cached RSA public key for authentication');
         return _sendEncryptedPassword();
       }
       final passwordBytes = password == null ? <int>[] : utf8.encode(password!);

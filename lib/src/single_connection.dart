@@ -107,6 +107,8 @@ class ConnectionSettings {
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
         characterSet = o.characterSet;
+
+  String get publicKeyCacheKey => '$host:$port/${db ?? ''}';
 }
 
 const _defaultIsolationLevel = IsolationLevel.repeatableRead;
@@ -183,7 +185,7 @@ class MySqlConnection implements QueriableConnection {
 
     Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize,
         c.characterSet, c.db, c.useCompression, c.useSSL,
-        c.allowPublicKeyRetrieval, c.rsaPublicKey);
+        c.allowPublicKeyRetrieval, c.rsaPublicKey, c.publicKeyCacheKey);
     handshakeCompleter = Completer<void>();
     conn =
         ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);

@@ -39,6 +39,7 @@ class HandshakeHandler extends Handler {
   final int _characterSet;
   final bool _allowPublicKeyRetrieval;
   final String? _rsaPublicKey;
+  final String? _publicKeyCacheKey;
 
   int? protocolVersion;
   String? serverVersion;
@@ -59,7 +60,8 @@ class HandshakeHandler extends Handler {
       this.useCompression = false,
       this.useSSL = false,
       this._allowPublicKeyRetrieval = false,
-      this._rsaPublicKey])
+      this._rsaPublicKey,
+      this._publicKeyCacheKey])
       : _db = db,
         super(Logger('HandshakeHandler'));
 
@@ -175,6 +177,7 @@ class HandshakeHandler extends Handler {
                   ssl: true,
                   allowPublicKeyRetrieval: _allowPublicKeyRetrieval,
                   rsaPublicKey: _rsaPublicKey,
+                  publicKeyCacheKey: _publicKeyCacheKey,
                 )));
     }
 
@@ -182,6 +185,7 @@ class HandshakeHandler extends Handler {
         nextHandler: AuthHandler(_user, _password, _db, scrambleBuffer,
             clientFlags, _maxPacketSize, _characterSet, _authPlugin,
             allowPublicKeyRetrieval: _allowPublicKeyRetrieval,
-            rsaPublicKey: _rsaPublicKey));
+            rsaPublicKey: _rsaPublicKey,
+            publicKeyCacheKey: _publicKeyCacheKey));
   }
 }
