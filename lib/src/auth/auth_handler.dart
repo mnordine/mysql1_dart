@@ -230,7 +230,6 @@ class AuthHandler extends Handler {
           _awaitingPublicKey = true;
           return HandlerResponse(nextHandler: this);
         }
-        print('using cached RSA public key for authentication');
         return _sendEncryptedPassword();
       }
       final passwordBytes = password == null ? <int>[] : utf8.encode(password!);
