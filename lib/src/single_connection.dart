@@ -123,6 +123,10 @@ class MySqlConnection implements QueriableConnection {
 
   MySqlConnection(this._timeout, this._conn);
 
+  bool get isClosed => _sentClose || _conn.isClosed;
+
+  void onClosed(void Function() callback) => _conn.onClosed(callback);
+
   IsolationLevel _currentIsolationLevel = _defaultIsolationLevel;
 
   /// Close the connection
@@ -435,6 +439,8 @@ class ReqRespConnection {
   bool _useCompression = false;
   bool _useSSL = false;
   final int _maxPacketSize;
+  bool _isClosed = false;
+  final _onClosedCallbacks = <void Function()>[];
 
   ReqRespConnection(this._socket, this._handler, Completer<void>? handshakeCompleter,
       this._maxPacketSize)
@@ -442,7 +448,32 @@ class ReqRespConnection {
         _compressedHeaderBuffer = Buffer(COMPRESSED_HEADER_SIZE),
         _completer = handshakeCompleter;
 
-  void close() => _socket.close();
+  bool get isClosed => _isClosed;
+
+  void onClosed(void Function() callback) {
+    if (_isClosed) {
+      callback();
+      return;
+    }
+
+    _onClosedCallbacks.add(callback);
+  }
+
+  void close() {
+    if (_isClosed) return;
+
+    _isClosed = true;
+    for (final callback in _onClosedCallbacks) {
+      try {
+        callback();
+      } catch (e, st) {
+        _log.warning('error calling close callback', e, st);
+      }
+    }
+    _onClosedCallbacks.clear();
+
+    _socket.close();
+  }
 
   void handleError(Object e, {bool keepOpen = false, StackTrace? st}) {
     if (_completer?.isCompleted == true) {
