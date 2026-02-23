@@ -29,16 +29,6 @@ import 'results/row.dart';
 
 final Logger _log = Logger('MySqlConnection');
 
-enum IsolationLevel {
-  readUncommitted('READ UNCOMMITTED'),
-  readCommitted('READ COMMITTED'),
-  repeatableRead('REPEATABLE READ'),
-  serializable('SERIALIZABLE');
-
-  final String value;
-  const IsolationLevel(this.value);
-}
-
 class ConnectionSettings {
   String host;
   int port;
@@ -111,8 +101,6 @@ class ConnectionSettings {
   String get publicKeyCacheKey => '$host:$port/${db ?? ''}';
 }
 
-const _defaultIsolationLevel = IsolationLevel.repeatableRead;
-
 /// Represents a connection to the database. Use [connect] to open a connection. You
 /// must call [close] when you are done.
 class MySqlConnection implements QueriableConnection {
@@ -122,8 +110,6 @@ class MySqlConnection implements QueriableConnection {
   bool _sentClose = false;
 
   MySqlConnection(this._timeout, this._conn);
-
-  IsolationLevel _currentIsolationLevel = _defaultIsolationLevel;
 
   /// Close the connection
   ///
@@ -284,14 +270,8 @@ class MySqlConnection implements QueriableConnection {
     return ret;
   }
 
-  Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock,
-    {IsolationLevel isolationLevel = _defaultIsolationLevel}) async {
+  Future<T> transaction<T>(Future<T> Function(TransactionContext) queryBlock) async {
     final T result;
-
-    if (_currentIsolationLevel != isolationLevel) {
-      await query('set transaction isolation level ${isolationLevel.value}');
-      _currentIsolationLevel = isolationLevel;
-    }
 
     await query('start transaction');
     try {
